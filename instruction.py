@@ -1,11 +1,12 @@
 import re
+from register import *
 
 OP = "\s*(?P<op>[a-zA-Z]+)\s*"
 RD = "\s*\$(?P<rd>[0-9a-zA-Z]+)\s*"
 RS = "\s*\$(?P<rs>[0-9a-zA-Z]+)\s*"
 RT = "\s*\$(?P<rt>[0-9a-zA-Z]+)\s*"
 IMM = "\s*(?P<imm>-?[0-9][x0-9a-fA-F]*)\s*"
-LABEL = "\s*(?P<label>[a-zA-Z_][_0-9a-zA-Z]?)\s*"
+LABEL = "\s*(?P<label>[a-zA-Z_][_0-9a-zA-Z]*)\s*"
 COMMA = "\s*,\s*"
 
 r_type_ins_1 = {
@@ -70,43 +71,48 @@ j_type_ins = {
     "type": "J",
     "regex": re.compile(LABEL)
 }
+halt_ins = {
+    "HALT": 0x3f,
+    "type": "H",
+    "regex": re.compile("\s*")
+}
 ins_type = [
     r_type_ins_1, r_type_ins_2, r_type_ins_3,
     i_type_ins_1, i_type_ins_2, i_type_ins_3, i_type_ins_4,
-    j_type_ins,
+    j_type_ins, halt_ins,
 ]
 ins_oprand = ["rd", "rs", "rt", "imm", "label"]
 
 class Instruction():
-    def __init__(self, op, d):
+    def __init__(self, op, addr, _type, d):
         self.op = op
-        self.rd = d["rd"] if "rd" in d else None
-        self.rs = d["rs"] if "rs" in d else None
-        self.rt = d["rt"] if "rt" in d else None
-        self.imm = d["imm"] if "imm" in d else None
-        self.label = d["label"] if "label" in d else None
+        self._type = _type
+        self.addr = addr
+        self.rd = get_reg_num(d["rd"]) if "rd" in d else 0
+        self.rs = get_reg_num(d["rs"]) if "rs" in d else 0
+        self.rt = get_reg_num(d["rt"]) if "rt" in d else 0
+        self.imm = int(d["imm"]) if "imm" in d else 0
+        self.label = d["label"] if "label" in d else 0
 
-    def to_binary(self, _type):
+    def to_binary(self):
         binary = 0
-        if _type == "R":
-            pass
-        elif _type == "I":
-            pass
-        elif _type == "J":
-            pass
+        if self._type == "R":
+            binary |= (self.rs & 0x1f) << 21
+            binary |= (self.rt & 0x1f) << 16
+            binary |= (self.rd & 0x1f) << 11
+            binary |= (self.imm & 0x1f) << 6
+            binary |= self.op & 0x3f
+        elif self._type == "I":
+            binary |= (self.op & 0x3f) << 26
+            binary |= (self.rs & 0x1f) << 21
+            binary |= (self.rt & 0x1f) << 16
+            binary |= self.imm & 0xffff
+        elif self._type == "J":
+            binary |= (self.op & 0x3f) << 26
+            binary |= self.label & 0x3ffffff
+        elif self._type == "H":
+            binary = 0xffffffff
         return binary
 
     def __str__(self):
         return ' '.join([str(self.op), str(self.rd), str(self.rs), str(self.rd), str(self.imm), str(self.label)])
-
-def parse_ins(line):
-    m = re.match("(?P<op>[a-zA-Z]+)(?P<oprand>.*)", line)
-    op = m.group("op").upper()
-    oprand = m.group("oprand")
-    for _type in ins_type:
-        if op in _type:
-            print oprand
-            _m = _type["regex"].match(oprand)
-            print _m.groupdict()
-            return Instruction(op, _m.groupdict())
-
