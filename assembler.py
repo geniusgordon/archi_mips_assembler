@@ -50,8 +50,6 @@ class Assembler():
         self.read_file(fin)
         self.parse_symbol(addr)
         self.assign_addr()
-        for _ins in self.ins:
-            print _ins
         self.output_file(fout, addr)
 
 if __name__ == '__main__':
