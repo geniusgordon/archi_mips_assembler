@@ -58,7 +58,7 @@ i_type_ins_3 = {
     "BEQ": 0x04,
     "BNE": 0x05,
     "type": "I",
-    "regex": re.compile(RS + COMMA + RT + COMMA + IMM)
+    "regex": re.compile(RS + COMMA + RT + COMMA + LABEL)
 }
 i_type_ins_4 = {
     "LUI": 0x0f,
@@ -91,7 +91,12 @@ class Instruction():
         self.rd = get_reg_num(d["rd"]) if "rd" in d else 0
         self.rs = get_reg_num(d["rs"]) if "rs" in d else 0
         self.rt = get_reg_num(d["rt"]) if "rt" in d else 0
-        self.imm = int(d["imm"]) if "imm" in d else 0
+        if "imm" not in d:
+            self.imm = 0
+        elif 'x' in d["imm"]:
+            self.imm = int(d["imm"], 16)
+        else:
+            self.imm = int(d["imm"])
         self.label = d["label"] if "label" in d else 0
 
     def to_binary(self):
