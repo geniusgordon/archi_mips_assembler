@@ -2,7 +2,7 @@ import re
 import sys
 from instruction import *
 
-class Assember():
+class Assembler():
 	def __init__(self):
 		self.line = []
 		self.ins = []
@@ -52,5 +52,6 @@ class Assember():
 		self.output_file(fout, addr)
 
 if __name__ == '__main__':
-	p = Assember()
-	p.assemble("func.S", "iimage.bin", 0x120)
+	p = Assembler()
+	p.assemble(sys.argv[1], "iimage.bin", int(sys.argv[2]))
+
