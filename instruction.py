@@ -120,4 +120,6 @@ class Instruction():
         return binary
 
     def __str__(self):
-        return ' '.join([str(self.op), str(self.rd), str(self.rs), str(self.rd), str(self.imm), str(self.label)])
+        return ' '.join([str(self.op), str(self.rd), str(self.rs), 
+                         str(self.rd), str(self.imm), str(self.label)])
+
