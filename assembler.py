@@ -26,9 +26,13 @@ class Assembler():
         m = re.match("\s*(?P<op>[a-zA-Z]+)(?P<oprand>.*)", line)
         op = m.group("op").upper()
         oprand = m.group("oprand")
+	if op not in reduce(lambda x,y: x+y, [list(_ins) for _ins in ins_type]):
+		raise Exception("Instruction not found:\n%s\n" % line)
         for _type in ins_type:
             if op in _type:
                 _m = _type["regex"].match(oprand)
+		if _m is None:
+			raise Exception("Syntax Error:\n%s\n" % line)
                 return Instruction(_type[op], addr, 
                                 _type["type"], _m.groupdict())
 
@@ -43,16 +47,22 @@ class Assembler():
     def assign_addr(self):
         for _ins in self.ins:
             if not isinstance(_ins.label, int):
-                _ins.imm = (self.sym[_ins.label] - _ins.addr - 4) / 4
-                _ins.label = self.sym[_ins.label] / 4
+		if _ins.label not in self.sym:
+			raise Exception("Label not found: %s\n" % _ins.label)
+		_ins.imm = (self.sym[_ins.label] - _ins.addr - 4) / 4
+		_ins.label = self.sym[_ins.label] / 4
 
     def assemble(self, fin, fout, addr):
         self.read_file(fin)
-        self.parse_symbol(addr)
-        self.assign_addr()
+	try:
+		self.parse_symbol(addr)
+		self.assign_addr()
+	except Exception as e:
+		print e	
+		return
         self.output_file(fout, addr)
 
 if __name__ == '__main__':
     p = Assembler()
-    p.assemble(sys.argv[1], "iimage.bin", int(sys.argv[2]))
+    p.assemble(sys.argv[1], "iimage.bin", int(sys.argv[2], 16))
 
