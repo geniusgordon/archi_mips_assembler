@@ -26,7 +26,7 @@ r_type_ins_2 = {
     "SRL": 0x02,
     "SRA": 0x03,
     "type": "R",
-    "regex": re.compile(RD + COMMA + RS + COMMA + IMM)
+    "regex": re.compile(RD + COMMA + RT + COMMA + IMM)
 }
 r_type_ins_3 = {
     "JR": 0x08,
